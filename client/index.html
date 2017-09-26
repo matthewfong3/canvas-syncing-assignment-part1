@@ -1,13 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
     <script type="text/babel" >
         "use strict";
-    
+        
+        let socket;
+
+        let clientValue = 0;
+        let clientValueElem;
+
+        let serverValueElem;
+
+        const incrementValue = () => {
+          clientValue += 5;
+          clientValueElem.innerHTML = clientValue;
+          
+          socket.emit('incrementOnServer', 5);
+        };
+        
+        const updateValue = (data) => {
+          serverValueElem.innerHTML = data;
+        };
+        
+        const init = () => {
+          serverValueElem = document.querySelector("#serverValue");
+          
+          clientValueElem = document.querySelector("#clientValue");
+          
+          // automatically connects to the server that delivered the page and returns the connected socket
+          socket = io.connect(); 
+          
+          socket.on('connect', () => {
+            setInterval(incrementValue, 1000);
+          });
+          
+          socket.on('updateOnClient', (data) => {
+            updateValue(data);
+          });
+        };
+        
+        window.onload = init;
     </script>
 </head>
 <body>
-
+  <h2>From Server: The current value is <span id="serverValue">0</span></h2>
+  
+  <h2>From Client: The current value is <span id="clientValue">0</span></h2>
 </body>
 </html>
